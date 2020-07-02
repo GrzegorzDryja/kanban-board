@@ -1,5 +1,7 @@
 // @ts-ignore
 import { autobind as Autobind } from '../decorators/autobind.ts'; //Need to ignore errors from .ts
+// @ts-ignore
+import * as Validation from '../util/validation.ts';
 
 export class KanbanInput {
     templateElement: HTMLTemplateElement;
@@ -32,11 +34,21 @@ export class KanbanInput {
       const enteredTitle = this.titleInputElement.value; //Note that always return text
       const enteredDescription = this.descriptionInputElement.value;
   
-      if ( //Check if input is not empty
-        enteredTitle.trim().length === 0 ||
-        enteredDescription.trim().length === 0
+      const titleValidatable: Validation.Validatable = {
+        value: enteredTitle,
+        required: true
+      };
+      const descriptionValidatable: Validation.Validatable = {
+        value: enteredDescription,
+        required: true,
+        minLength: 5
+      };
+  
+      if (
+        !Validation.validate(titleValidatable) ||
+        !Validation.validate(descriptionValidatable)
       ) {
-        alert('Empty input, please try again!');
+        alert("Input shouldn't be empty/description min 5 chars length, please try again!");
         return;
       } else {
         return [enteredTitle, enteredDescription];

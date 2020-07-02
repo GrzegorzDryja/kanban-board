@@ -134,14 +134,44 @@ System.register("decorators/autobind", [], function (exports_1, context_1) {
         }
     };
 });
-System.register("components/kanban-input", ["decorators/autobind"], function (exports_2, context_2) {
+System.register("util/validation", [], function (exports_2, context_2) {
     "use strict";
-    var autobind_ts_1, KanbanInput;
     var __moduleName = context_2 && context_2.id;
+    function validate(validatableInput) {
+        let isValid = true;
+        if (validatableInput.required) {
+            isValid = isValid && validatableInput.value.toString().trim().length !== 0; //value could be string
+        }
+        if (validatableInput.minLength != null &&
+            typeof validatableInput.value === 'string') {
+            isValid =
+                isValid && validatableInput.value.length >= validatableInput.minLength;
+        }
+        if (validatableInput.maxLength != null &&
+            typeof validatableInput.value === 'string') {
+            isValid =
+                isValid && validatableInput.value.length <= validatableInput.maxLength;
+        }
+        return isValid;
+    }
+    exports_2("validate", validate);
+    return {
+        setters: [],
+        execute: function () {
+        }
+    };
+});
+System.register("components/kanban-input", ["decorators/autobind", "util/validation"], function (exports_3, context_3) {
+    "use strict";
+    var autobind_ts_1, Validation, KanbanInput;
+    var __moduleName = context_3 && context_3.id;
     return {
         setters: [
             function (autobind_ts_1_1) {
                 autobind_ts_1 = autobind_ts_1_1;
+            },
+            function (Validation_1) {
+                Validation = Validation_1;
             }
         ],
         execute: function () {
@@ -161,10 +191,18 @@ System.register("components/kanban-input", ["decorators/autobind"], function (ex
                     allyUserInput() {
                         const enteredTitle = this.titleInputElement.value; //Note that always return text
                         const enteredDescription = this.descriptionInputElement.value;
-                        if ( //Check if input is not empty
-                        enteredTitle.trim().length === 0 ||
-                            enteredDescription.trim().length === 0) {
-                            alert('Empty input, please try again!');
+                        const titleValidatable = {
+                            value: enteredTitle,
+                            required: true
+                        };
+                        const descriptionValidatable = {
+                            value: enteredDescription,
+                            required: true,
+                            minLength: 5
+                        };
+                        if (!Validation.validate(titleValidatable) ||
+                            !Validation.validate(descriptionValidatable)) {
+                            alert("Input shouldn't be empty/description min 5 chars length, please try again!");
                             return;
                         }
                         else {
@@ -196,14 +234,14 @@ System.register("components/kanban-input", ["decorators/autobind"], function (ex
                 ], KanbanInput.prototype, "submitHandler", null);
                 return KanbanInput;
             })();
-            exports_2("KanbanInput", KanbanInput);
+            exports_3("KanbanInput", KanbanInput);
         }
     };
 });
-System.register("mod", ["components/kanban-input"], function (exports_3, context_3) {
+System.register("mod", ["components/kanban-input"], function (exports_4, context_4) {
     "use strict";
     var kanban_input_ts_1, kanbanInput;
-    var __moduleName = context_3 && context_3.id;
+    var __moduleName = context_4 && context_4.id;
     return {
         setters: [
             function (kanban_input_ts_1_1) {
