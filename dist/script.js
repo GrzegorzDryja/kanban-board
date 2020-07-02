@@ -158,12 +158,34 @@ System.register("components/kanban-input", ["decorators/autobind"], function (ex
                         this.configure();
                         this.attach();
                     }
+                    allyUserInput() {
+                        const enteredTitle = this.titleInputElement.value; //Note that always return text
+                        const enteredDescription = this.descriptionInputElement.value;
+                        if ( //Check if input is not empty
+                        enteredTitle.trim().length === 0 ||
+                            enteredDescription.trim().length === 0) {
+                            alert('Empty input, please try again!');
+                            return;
+                        }
+                        else {
+                            return [enteredTitle, enteredDescription];
+                        }
+                    }
+                    clearInputs() {
+                        this.titleInputElement.value = '';
+                        this.descriptionInputElement.value = '';
+                    }
                     submitHandler(event) {
                         event.preventDefault(); //To block http request
-                        console.log(this.titleInputElement.value);
+                        const userInput = this.allyUserInput();
+                        if (Array.isArray(userInput)) { //Check ts tuple in js
+                            const [title, desc] = userInput;
+                            console.log(title, desc);
+                            this.clearInputs();
+                        }
                     }
                     configure() {
-                        this.element.addEventListener('submit', this.submitHandler); //Have to call it with bind
+                        this.element.addEventListener('submit', this.submitHandler); //Have to call it with bind witch is in decorator
                     }
                     attach() {
                         this.hostElement.insertAdjacentElement('afterbegin', this.element);
