@@ -1,3 +1,5 @@
+import { autobind as Autobind } from '../decorators/autobind.ts';
+
 export class KanbanInput {
     templateElement: HTMLTemplateElement;
     hostElement: HTMLDivElement;
@@ -25,13 +27,14 @@ export class KanbanInput {
       this.attach();
     }
 
-    private submitHandler(event: Event) {
+    @Autobind
+    private submitHandler(event: Event) { //To awoid errors set "experimentalDecorators": true, in tsconfig.ts
       event.preventDefault(); //To block http request
       console.log(this.titleInputElement.value);
     }
 
     private configure() {
-      this.element.addEventListener('submit', this.submitHandler.bind(this)); //Have to call it with bind
+      this.element.addEventListener('submit', this.submitHandler); //Have to call it with bind
     } 
   
     private attach() {
