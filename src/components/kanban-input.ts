@@ -2,6 +2,8 @@
 import { autobind as Autobind } from '../decorators/autobind.ts'; //Need to ignore errors from .ts
 // @ts-ignore
 import * as Validation from '../util/validation.ts';
+// @ts-ignore
+import { taskState } from '../state/task-state.ts';
 
 export class KanbanInput {
     templateElement: HTMLTemplateElement;
@@ -66,6 +68,7 @@ export class KanbanInput {
       const userInput = this.allyUserInput();
       if (Array.isArray(userInput)) { //Check ts tuple in js
         const [title, desc] = userInput;
+        taskState.addTask(title, desc);
         console.log(title, desc);
         this.clearInputs();
       }

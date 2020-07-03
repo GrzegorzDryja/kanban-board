@@ -161,10 +161,79 @@ System.register("util/validation", [], function (exports_2, context_2) {
         }
     };
 });
-System.register("components/kanban-input", ["decorators/autobind", "util/validation"], function (exports_3, context_3) {
+System.register("models/kanban", [], function (exports_3, context_3) {
     "use strict";
-    var autobind_ts_1, Validation, KanbanInput;
+    var TaskStatus, Task;
     var __moduleName = context_3 && context_3.id;
+    return {
+        setters: [],
+        execute: function () {
+            (function (TaskStatus) {
+                TaskStatus[TaskStatus["ToDo"] = 0] = "ToDo";
+                TaskStatus[TaskStatus["InProgress"] = 1] = "InProgress";
+                TaskStatus[TaskStatus["Done"] = 2] = "Done";
+            })(TaskStatus || (TaskStatus = {}));
+            exports_3("TaskStatus", TaskStatus);
+            Task = class Task {
+                constructor(id, title, description, status) {
+                    this.id = id;
+                    this.title = title;
+                    this.description = description;
+                    this.status = status;
+                }
+            };
+            exports_3("Task", Task);
+        }
+    };
+});
+System.register("state/task-state", ["models/kanban"], function (exports_4, context_4) {
+    "use strict";
+    var kanban_ts_1, State, TaskState, taskState;
+    var __moduleName = context_4 && context_4.id;
+    return {
+        setters: [
+            function (kanban_ts_1_1) {
+                kanban_ts_1 = kanban_ts_1_1;
+            }
+        ],
+        execute: function () {
+            State = class State {
+                constructor() {
+                    this.listeners = [];
+                }
+                addListener(listenerFunc) {
+                    this.listeners.push(listenerFunc);
+                }
+            };
+            TaskState = class TaskState extends State {
+                constructor() {
+                    super();
+                    this.tasks = [];
+                }
+                static getInstance() {
+                    if (this.instance) {
+                        return this.instance;
+                    }
+                    this.instance = new TaskState();
+                    return this.instance;
+                }
+                addTask(title, description) {
+                    const newTask = new kanban_ts_1.Task(Math.random().toString(), title, description, kanban_ts_1.TaskStatus.ToDo);
+                    this.tasks.push(newTask);
+                    for (const listenerFunc of this.listeners) {
+                        listenerFunc(this.tasks.slice()); //slice for copy
+                    }
+                }
+            };
+            exports_4("TaskState", TaskState);
+            exports_4("taskState", taskState = TaskState.getInstance());
+        }
+    };
+});
+System.register("components/kanban-input", ["decorators/autobind", "util/validation", "state/task-state"], function (exports_5, context_5) {
+    "use strict";
+    var autobind_ts_1, Validation, task_state_ts_1, KanbanInput;
+    var __moduleName = context_5 && context_5.id;
     return {
         setters: [
             function (autobind_ts_1_1) {
@@ -172,6 +241,9 @@ System.register("components/kanban-input", ["decorators/autobind", "util/validat
             },
             function (Validation_1) {
                 Validation = Validation_1;
+            },
+            function (task_state_ts_1_1) {
+                task_state_ts_1 = task_state_ts_1_1;
             }
         ],
         execute: function () {
@@ -218,6 +290,7 @@ System.register("components/kanban-input", ["decorators/autobind", "util/validat
                         const userInput = this.allyUserInput();
                         if (Array.isArray(userInput)) { //Check ts tuple in js
                             const [title, desc] = userInput;
+                            task_state_ts_1.taskState.addTask(title, desc);
                             console.log(title, desc);
                             this.clearInputs();
                         }
@@ -234,16 +307,20 @@ System.register("components/kanban-input", ["decorators/autobind", "util/validat
                 ], KanbanInput.prototype, "submitHandler", null);
                 return KanbanInput;
             })();
-            exports_3("KanbanInput", KanbanInput);
+            exports_5("KanbanInput", KanbanInput);
         }
     };
 });
-System.register("components/task-list", [], function (exports_4, context_4) {
+System.register("components/task-list", ["state/task-state"], function (exports_6, context_6) {
     "use strict";
-    var TaskList;
-    var __moduleName = context_4 && context_4.id;
+    var task_state_ts_2, TaskList;
+    var __moduleName = context_6 && context_6.id;
     return {
-        setters: [],
+        setters: [
+            function (task_state_ts_2_1) {
+                task_state_ts_2 = task_state_ts_2_1;
+            }
+        ],
         execute: function () {
             TaskList = class TaskList {
                 constructor(type) {
@@ -253,8 +330,20 @@ System.register("components/task-list", [], function (exports_4, context_4) {
                     const importedNode = document.importNode(this.templateElement.content, true);
                     this.element = importedNode.firstElementChild;
                     this.element.id = `${this.type}-task`;
+                    task_state_ts_2.taskState.addListener((tasks) => {
+                        this.addedTasks = tasks;
+                        this.renderTasks();
+                    });
                     this.attach();
                     this.renderContent();
+                }
+                renderTasks() {
+                    const listElement = document.getElementById(`${this.type}-task-list`);
+                    for (const taskItem of this.addedTasks) {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = taskItem.title;
+                        listElement.appendChild(listItem);
+                    }
                 }
                 renderContent() {
                     const listId = `${this.type}-task-list`;
@@ -266,14 +355,14 @@ System.register("components/task-list", [], function (exports_4, context_4) {
                     this.hostElement.insertAdjacentElement('beforeend', this.element);
                 }
             };
-            exports_4("TaskList", TaskList);
+            exports_6("TaskList", TaskList);
         }
     };
 });
-System.register("mod", ["components/kanban-input", "components/task-list"], function (exports_5, context_5) {
+System.register("mod", ["components/kanban-input", "components/task-list"], function (exports_7, context_7) {
     "use strict";
     var kanban_input_ts_1, task_list_ts_1, kanbanInput, todo, inprogress, done;
-    var __moduleName = context_5 && context_5.id;
+    var __moduleName = context_7 && context_7.id;
     return {
         setters: [
             function (kanban_input_ts_1_1) {
@@ -285,8 +374,8 @@ System.register("mod", ["components/kanban-input", "components/task-list"], func
         ],
         execute: function () {
             kanbanInput = new kanban_input_ts_1.KanbanInput();
-            todo = new task_list_ts_1.TaskList('todo');
-            inprogress = new task_list_ts_1.TaskList('inprogress');
+            todo = new task_list_ts_1.TaskList('to-do');
+            inprogress = new task_list_ts_1.TaskList('in-progress');
             done = new task_list_ts_1.TaskList('done');
         }
     };
