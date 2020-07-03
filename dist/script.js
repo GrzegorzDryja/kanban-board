@@ -238,18 +238,56 @@ System.register("components/kanban-input", ["decorators/autobind", "util/validat
         }
     };
 });
-System.register("mod", ["components/kanban-input"], function (exports_4, context_4) {
+System.register("components/task-list", [], function (exports_4, context_4) {
     "use strict";
-    var kanban_input_ts_1, kanbanInput;
+    var TaskList;
     var __moduleName = context_4 && context_4.id;
+    return {
+        setters: [],
+        execute: function () {
+            TaskList = class TaskList {
+                constructor(type) {
+                    this.type = type;
+                    this.templateElement = document.getElementById('task-list');
+                    this.hostElement = document.getElementById('flex-container');
+                    const importedNode = document.importNode(this.templateElement.content, true);
+                    this.element = importedNode.firstElementChild;
+                    this.element.id = `${this.type}-task`;
+                    this.attach();
+                    this.renderContent();
+                }
+                renderContent() {
+                    const listId = `${this.type}-task-list`;
+                    this.element.querySelector('ul').id = listId;
+                    this.element.querySelector('h2').textContent =
+                        this.type.toUpperCase();
+                }
+                attach() {
+                    this.hostElement.insertAdjacentElement('beforeend', this.element);
+                }
+            };
+            exports_4("TaskList", TaskList);
+        }
+    };
+});
+System.register("mod", ["components/kanban-input", "components/task-list"], function (exports_5, context_5) {
+    "use strict";
+    var kanban_input_ts_1, task_list_ts_1, kanbanInput, todo, inprogress, done;
+    var __moduleName = context_5 && context_5.id;
     return {
         setters: [
             function (kanban_input_ts_1_1) {
                 kanban_input_ts_1 = kanban_input_ts_1_1;
+            },
+            function (task_list_ts_1_1) {
+                task_list_ts_1 = task_list_ts_1_1;
             }
         ],
         execute: function () {
             kanbanInput = new kanban_input_ts_1.KanbanInput();
+            todo = new task_list_ts_1.TaskList('todo');
+            inprogress = new task_list_ts_1.TaskList('inprogress');
+            done = new task_list_ts_1.TaskList('done');
         }
     };
 });

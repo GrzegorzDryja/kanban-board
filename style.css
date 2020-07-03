@@ -54,36 +54,42 @@
     background: #a80041;
     border-color: #a80041;
   }
-  
+
+  #flex-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    
+  }
+
   .kanban {
     margin: 1rem;
     border: 1px solid red;
+    width: 100%;
   }
   
   .kanban header {
     background: red;
     height: 3.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    text-align: center;
   }
   
-  #inprogress {
+  #inprogress-task {
     border-color: yellow;
   }
   
-  #inprogress header {
+  #inprogress-task header {
     background: yellow;
   }
 
-  #done {
+  #done-task {
     border-color: green;
   }
   
-  #done header {
+  #done-task header {
     background: green;
   }
-  
+
   .kanban h2 {
     margin: 0;
     color: white;
