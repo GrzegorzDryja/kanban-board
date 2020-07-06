@@ -311,14 +311,17 @@ System.register("components/kanban-input", ["decorators/autobind", "util/validat
         }
     };
 });
-System.register("components/task-list", ["state/task-state"], function (exports_6, context_6) {
+System.register("components/task-list", ["state/task-state", "models/kanban"], function (exports_6, context_6) {
     "use strict";
-    var task_state_ts_2, TaskList;
+    var task_state_ts_2, kanban_ts_2, TaskList;
     var __moduleName = context_6 && context_6.id;
     return {
         setters: [
             function (task_state_ts_2_1) {
                 task_state_ts_2 = task_state_ts_2_1;
+            },
+            function (kanban_ts_2_1) {
+                kanban_ts_2 = kanban_ts_2_1;
             }
         ],
         execute: function () {
@@ -331,7 +334,18 @@ System.register("components/task-list", ["state/task-state"], function (exports_
                     this.element = importedNode.firstElementChild;
                     this.element.id = `${this.type}-task`;
                     task_state_ts_2.taskState.addListener((tasks) => {
-                        this.addedTasks = tasks;
+                        const relevantTasks = tasks.filter(tsk => {
+                            if (this.type === "to-do") {
+                                return tsk.status === kanban_ts_2.TaskStatus.ToDo;
+                            }
+                            else if (this.type === "in-progress") {
+                                return tsk.status === kanban_ts_2.TaskStatus.InProgress;
+                            }
+                            else {
+                                return tsk.status === kanban_ts_2.TaskStatus.Done;
+                            }
+                        });
+                        this.addedTasks = relevantTasks;
                         this.renderTasks();
                     });
                     this.attach();
@@ -339,6 +353,7 @@ System.register("components/task-list", ["state/task-state"], function (exports_
                 }
                 renderTasks() {
                     const listElement = document.getElementById(`${this.type}-task-list`);
+                    listElement.innerHTML = ''; //For adding new task all list will be render again
                     for (const taskItem of this.addedTasks) {
                         const listItem = document.createElement('li');
                         listItem.textContent = taskItem.title;

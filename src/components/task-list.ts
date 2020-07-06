@@ -1,5 +1,5 @@
 import { taskState } from '../state/task-state.ts';
-import { Task } from '../models/kanban.ts';
+import { Task, TaskStatus } from '../models/kanban.ts';
 
 export class TaskList {
     templateElement: HTMLTemplateElement;
@@ -18,7 +18,16 @@ export class TaskList {
       this.element.id = `${this.type}-task`;
 
       taskState.addListener((tasks: Task[]) => {
-        this.addedTasks = tasks;
+        const relevantTasks = tasks.filter(tsk => {
+          if (this.type === "to-do"){
+           return tsk.status === TaskStatus.ToDo;
+          } else if (this.type === "in-progress"){
+            return tsk.status === TaskStatus.InProgress;
+          } else {
+            return tsk.status === TaskStatus.Done;
+          }
+        });
+        this.addedTasks = relevantTasks;
         this.renderTasks();
       })
 
@@ -28,6 +37,7 @@ export class TaskList {
 
     private renderTasks() {
       const listElement = document.getElementById(`${this.type}-task-list`);
+      listElement.innerHTML = ''; //For adding new task all list will be render again
       for (const taskItem of this.addedTasks) {
         const listItem = document.createElement('li');
         listItem.textContent = taskItem.title;

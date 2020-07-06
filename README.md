@@ -1,4 +1,4 @@
 # kanban-board
-Simple kanban board for OOP TypeScript and HTML5 drag&amp;drop practice.
+Kanban board with counting time function for each task for OOP TypeScript, HTML5 drag&drop, flexbox and templates practice.
 
 Terminal in src cd: deno bundle -c tsconfig.json mod.ts ../dist/script.js
