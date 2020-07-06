@@ -140,7 +140,7 @@ System.register("util/validation", [], function (exports_2, context_2) {
     function validate(validatableInput) {
         let isValid = true;
         if (validatableInput.required) {
-            isValid = isValid && validatableInput.value.toString().trim().length !== 0; //value could be string
+            isValid = isValid && validatableInput.value.toString().trim().length !== 0;
         }
         if (validatableInput.minLength != null &&
             typeof validatableInput.value === 'string') {
@@ -221,7 +221,7 @@ System.register("state/task-state", ["models/kanban"], function (exports_4, cont
                     const newTask = new kanban_ts_1.Task(Math.random().toString(), title, description, kanban_ts_1.TaskStatus.ToDo);
                     this.tasks.push(newTask);
                     for (const listenerFunc of this.listeners) {
-                        listenerFunc(this.tasks.slice()); //slice for copy
+                        listenerFunc(this.tasks.slice());
                     }
                 }
             };
@@ -230,10 +230,36 @@ System.register("state/task-state", ["models/kanban"], function (exports_4, cont
         }
     };
 });
-System.register("components/kanban-input", ["decorators/autobind", "util/validation", "state/task-state"], function (exports_5, context_5) {
+System.register("components/base-components", [], function (exports_5, context_5) {
     "use strict";
-    var autobind_ts_1, Validation, task_state_ts_1, KanbanInput;
+    var Component;
     var __moduleName = context_5 && context_5.id;
+    return {
+        setters: [],
+        execute: function () {
+            Component = class Component {
+                constructor(templateId, hostElementId, insertAtStart, newElementId) {
+                    this.templateElement = document.getElementById(templateId);
+                    this.hostElement = document.getElementById(hostElementId);
+                    const importedNode = document.importNode(this.templateElement.content, true);
+                    this.element = importedNode.firstElementChild;
+                    if (newElementId) {
+                        this.element.id = newElementId;
+                    }
+                    this.attach(insertAtStart);
+                }
+                attach(insertAtBeginning) {
+                    this.hostElement.insertAdjacentElement(insertAtBeginning ? 'afterbegin' : 'beforeend', this.element);
+                }
+            };
+            exports_5("Component", Component);
+        }
+    };
+});
+System.register("components/kanban-input", ["decorators/autobind", "util/validation", "state/task-state", "components/base-components"], function (exports_6, context_6) {
+    "use strict";
+    var autobind_ts_1, Validation, task_state_ts_1, base_components_ts_1, KanbanInput;
+    var __moduleName = context_6 && context_6.id;
     return {
         setters: [
             function (autobind_ts_1_1) {
@@ -244,24 +270,27 @@ System.register("components/kanban-input", ["decorators/autobind", "util/validat
             },
             function (task_state_ts_1_1) {
                 task_state_ts_1 = task_state_ts_1_1;
+            },
+            function (base_components_ts_1_1) {
+                base_components_ts_1 = base_components_ts_1_1;
             }
         ],
         execute: function () {
-            KanbanInput = /** @class */ (() => {
-                class KanbanInput {
+            KanbanInput = (() => {
+                class KanbanInput extends base_components_ts_1.Component {
                     constructor() {
-                        this.templateElement = document.getElementById('task-input');
-                        this.hostElement = document.getElementById('app');
-                        const importedNode = document.importNode(this.templateElement.content, true);
-                        this.element = importedNode.firstElementChild;
-                        this.element.id = 'user-input';
+                        super('task-input', 'app', true, 'user-input');
                         this.titleInputElement = this.element.querySelector('#title');
                         this.descriptionInputElement = this.element.querySelector('#description');
                         this.configure();
-                        this.attach();
                     }
+                    configure() {
+                        this.element.addEventListener('submit', this.submitHandler);
+                    }
+                    renderContent() { }
+                    ;
                     allyUserInput() {
-                        const enteredTitle = this.titleInputElement.value; //Note that always return text
+                        const enteredTitle = this.titleInputElement.value;
                         const enteredDescription = this.descriptionInputElement.value;
                         const titleValidatable = {
                             value: enteredTitle,
@@ -286,20 +315,14 @@ System.register("components/kanban-input", ["decorators/autobind", "util/validat
                         this.descriptionInputElement.value = '';
                     }
                     submitHandler(event) {
-                        event.preventDefault(); //To block http request
+                        event.preventDefault();
                         const userInput = this.allyUserInput();
-                        if (Array.isArray(userInput)) { //Check ts tuple in js
+                        if (Array.isArray(userInput)) {
                             const [title, desc] = userInput;
                             task_state_ts_1.taskState.addTask(title, desc);
                             console.log(title, desc);
                             this.clearInputs();
                         }
-                    }
-                    configure() {
-                        this.element.addEventListener('submit', this.submitHandler); //Have to call it with bind witch is in decorator
-                    }
-                    attach() {
-                        this.hostElement.insertAdjacentElement('afterbegin', this.element);
                     }
                 }
                 __decorate([
@@ -307,14 +330,14 @@ System.register("components/kanban-input", ["decorators/autobind", "util/validat
                 ], KanbanInput.prototype, "submitHandler", null);
                 return KanbanInput;
             })();
-            exports_5("KanbanInput", KanbanInput);
+            exports_6("KanbanInput", KanbanInput);
         }
     };
 });
-System.register("components/task-list", ["state/task-state", "models/kanban"], function (exports_6, context_6) {
+System.register("components/task-list", ["state/task-state", "models/kanban", "components/base-components"], function (exports_7, context_7) {
     "use strict";
-    var task_state_ts_2, kanban_ts_2, TaskList;
-    var __moduleName = context_6 && context_6.id;
+    var task_state_ts_2, kanban_ts_2, base_components_ts_2, TaskList;
+    var __moduleName = context_7 && context_7.id;
     return {
         setters: [
             function (task_state_ts_2_1) {
@@ -322,17 +345,21 @@ System.register("components/task-list", ["state/task-state", "models/kanban"], f
             },
             function (kanban_ts_2_1) {
                 kanban_ts_2 = kanban_ts_2_1;
+            },
+            function (base_components_ts_2_1) {
+                base_components_ts_2 = base_components_ts_2_1;
             }
         ],
         execute: function () {
-            TaskList = class TaskList {
+            TaskList = class TaskList extends base_components_ts_2.Component {
                 constructor(type) {
+                    super('task-list', 'flex-container', false, `${type}-task`);
                     this.type = type;
-                    this.templateElement = document.getElementById('task-list');
-                    this.hostElement = document.getElementById('flex-container');
-                    const importedNode = document.importNode(this.templateElement.content, true);
-                    this.element = importedNode.firstElementChild;
-                    this.element.id = `${this.type}-task`;
+                    this.addedTasks = [];
+                    this.configure();
+                    this.renderContent();
+                }
+                configure() {
                     task_state_ts_2.taskState.addListener((tasks) => {
                         const relevantTasks = tasks.filter(tsk => {
                             if (this.type === "to-do") {
@@ -348,36 +375,32 @@ System.register("components/task-list", ["state/task-state", "models/kanban"], f
                         this.addedTasks = relevantTasks;
                         this.renderTasks();
                     });
-                    this.attach();
-                    this.renderContent();
                 }
-                renderTasks() {
-                    const listElement = document.getElementById(`${this.type}-task-list`);
-                    listElement.innerHTML = ''; //For adding new task all list will be render again
-                    for (const taskItem of this.addedTasks) {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = taskItem.title;
-                        listElement.appendChild(listItem);
-                    }
-                }
+                ;
                 renderContent() {
                     const listId = `${this.type}-task-list`;
                     this.element.querySelector('ul').id = listId;
                     this.element.querySelector('h2').textContent =
                         this.type.toUpperCase();
                 }
-                attach() {
-                    this.hostElement.insertAdjacentElement('beforeend', this.element);
+                renderTasks() {
+                    const listElement = document.getElementById(`${this.type}-task-list`);
+                    listElement.innerHTML = '';
+                    for (const taskItem of this.addedTasks) {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = taskItem.title;
+                        listElement.appendChild(listItem);
+                    }
                 }
             };
-            exports_6("TaskList", TaskList);
+            exports_7("TaskList", TaskList);
         }
     };
 });
-System.register("mod", ["components/kanban-input", "components/task-list"], function (exports_7, context_7) {
+System.register("mod", ["components/kanban-input", "components/task-list"], function (exports_8, context_8) {
     "use strict";
     var kanban_input_ts_1, task_list_ts_1, kanbanInput, todo, inprogress, done;
-    var __moduleName = context_7 && context_7.id;
+    var __moduleName = context_8 && context_8.id;
     return {
         setters: [
             function (kanban_input_ts_1_1) {

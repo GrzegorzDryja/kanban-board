@@ -1,36 +1,24 @@
-// @ts-ignore
 import { autobind as Autobind } from '../decorators/autobind.ts'; //Need to ignore errors from .ts
-// @ts-ignore
 import * as Validation from '../util/validation.ts';
-// @ts-ignore
 import { taskState } from '../state/task-state.ts';
+import { Component } from '../components/base-components.ts';
 
-export class KanbanInput {
-    templateElement: HTMLTemplateElement;
-    hostElement: HTMLDivElement;
-    element: HTMLFormElement;
+export class KanbanInput extends Component<HTMLDivElement, HTMLFormElement> {
     titleInputElement: HTMLInputElement;
     descriptionInputElement: HTMLInputElement;
   
     constructor() {
-      this.templateElement = document.getElementById(
-        'task-input'
-      )! as HTMLTemplateElement;
-      this.hostElement = document.getElementById('app')! as HTMLDivElement;
-  
-      const importedNode = document.importNode(
-        this.templateElement.content,
-        true
-      );
-      this.element = importedNode.firstElementChild as HTMLFormElement;
-      this.element.id = 'user-input';
-
+      super('task-input', 'app', true, 'user-input');
       this.titleInputElement = this.element.querySelector('#title');
       this.descriptionInputElement = this.element.querySelector('#description');
 
       this.configure();
-      this.attach();
     }
+
+    configure() {      
+      this.element.addEventListener('submit', this.submitHandler); //Have to call it with bind witch is in decorator
+    }
+    renderContent(){};
 
     private allyUserInput(): [string, string] | void {
       const enteredTitle = this.titleInputElement.value; //Note that always return text
@@ -72,14 +60,6 @@ export class KanbanInput {
         console.log(title, desc);
         this.clearInputs();
       }
-    }
-
-    private configure() {
-      this.element.addEventListener('submit', this.submitHandler); //Have to call it with bind witch is in decorator
     } 
-  
-    private attach() {
-      this.hostElement.insertAdjacentElement('afterbegin', this.element);
-    }
   }
   
