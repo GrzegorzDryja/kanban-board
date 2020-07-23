@@ -9,6 +9,7 @@ class InputForm{
 
     const importedNode = document.importNode(this.templateElement.content, true);
     this.element = <HTMLFormElement> importedNode.firstElementChild;
+    this.element.id = "user-input";
     this.attach();
   }
 

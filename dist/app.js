@@ -5,6 +5,7 @@ var InputForm = (function () {
         this.targetElement = document.querySelector("#target");
         var importedNode = document.importNode(this.templateElement.content, true);
         this.element = importedNode.firstElementChild;
+        this.element.id = "user-input";
         this.attach();
     }
     InputForm.prototype.attach = function () {
