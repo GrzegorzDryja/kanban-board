@@ -1,0 +1,23 @@
+{
+  "name": "kanban-board",
+  "version": "0.1.0",
+  "description": "Uczę się",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "lite-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GrzegorzDryja/kanban-board.git"
+  },
+  "author": "Grzegorz Dryja",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GrzegorzDryja/kanban-board/issues"
+  },
+  "homepage": "https://github.com/GrzegorzDryja/kanban-board#readme",
+  "devDependencies": {
+    "lite-server": "^2.5.4"
+  }
+}
