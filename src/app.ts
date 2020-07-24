@@ -1,6 +1,20 @@
+enum TaskStatus {
+  ToDo,
+  InProgress,
+  Done
+}
+
+class Task {
+  constructor(public id: string, public task: string, public status: TaskStatus){
+
+  }
+}
+
+type Listener = (items: Task[]) => void;
+
 class KanbanState {
-  private listeners: any[] = [];
-  private tasks: any[] = [];
+  private listeners: Listener[] = [];
+  private tasks: Task[] = [];
   private static instance: KanbanState;
 
   private constructor(){
@@ -15,15 +29,12 @@ class KanbanState {
     return this.instance;
   }
 
-  addListener(listenerFn: Function){
+  addListener(listenerFn: Listener){
     this.listeners.push(listenerFn);
   }
 
   addTask(task: string){
-    const newTask = {
-      id: Math.random().toString(),
-      task: task
-    };
+    const newTask = new Task(Math.random().toString(), task, TaskStatus.ToDo);
     this.tasks.push(newTask);
     for(const listenerFn of this.listeners){
       listenerFn(this.tasks.slice())
@@ -70,7 +81,7 @@ class KanbanBoard{
   templateElement: HTMLTemplateElement;
   targetElement: HTMLDivElement;
   element: HTMLElement;
-  assignedTasks: any[];
+  assignedTasks: Task[];
 
   constructor(private state: "to-do" | "in-progress" | "done"){
     this.templateElement = <HTMLTemplateElement>(
@@ -86,10 +97,19 @@ class KanbanBoard{
     this.element = <HTMLFormElement>importedNode.firstElementChild;
     this.element.id = `${this.state}-task`;
 
-      kanbanState.addListener((tasks: any[]) => {
-        this.assignedTasks = tasks;
-        this.renderTasks();
-      })
+    kanbanState.addListener((tasks: Task[]) => {
+      const crucialTasks = tasks.filter(tsk => {
+        if(this.state === "to-do"){
+          return tsk.status === TaskStatus.ToDo;
+        }
+        if(this.state === "in-progress"){
+          return tsk.status === TaskStatus.InProgress;
+        }
+        return tsk.status === TaskStatus.Done;
+      });
+      this.assignedTasks = crucialTasks;
+      this.renderTasks();
+    })
 
     this.attach();
     this.renderContent();    
@@ -97,6 +117,7 @@ class KanbanBoard{
 
   private renderTasks(){
     const listEl = <HTMLUListElement>document.querySelector(`#${this.state}`);
+    listEl.innerHTML = ""; //Look up for it on implementing timer
     for(const kanItem of this.assignedTasks) {
       const listItem = document.createElement('li');
       listItem.textContent = kanItem.task;

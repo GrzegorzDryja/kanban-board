@@ -5,6 +5,19 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var TaskStatus;
+(function (TaskStatus) {
+    TaskStatus[TaskStatus["ToDo"] = 0] = "ToDo";
+    TaskStatus[TaskStatus["InProgress"] = 1] = "InProgress";
+    TaskStatus[TaskStatus["Done"] = 2] = "Done";
+})(TaskStatus || (TaskStatus = {}));
+class Task {
+    constructor(id, task, status) {
+        this.id = id;
+        this.task = task;
+        this.status = status;
+    }
+}
 class KanbanState {
     constructor() {
         this.listeners = [];
@@ -21,10 +34,7 @@ class KanbanState {
         this.listeners.push(listenerFn);
     }
     addTask(task) {
-        const newTask = {
-            id: Math.random().toString(),
-            task: task
-        };
+        const newTask = new Task(Math.random().toString(), task, TaskStatus.ToDo);
         this.tasks.push(newTask);
         for (const listenerFn of this.listeners) {
             listenerFn(this.tasks.slice());
@@ -66,7 +76,16 @@ class KanbanBoard {
         this.element = importedNode.firstElementChild;
         this.element.id = `${this.state}-task`;
         kanbanState.addListener((tasks) => {
-            this.assignedTasks = tasks;
+            const crucialTasks = tasks.filter(tsk => {
+                if (this.state === "to-do") {
+                    return tsk.status === TaskStatus.ToDo;
+                }
+                if (this.state === "in-progress") {
+                    return tsk.status === TaskStatus.InProgress;
+                }
+                return tsk.status === TaskStatus.Done;
+            });
+            this.assignedTasks = crucialTasks;
             this.renderTasks();
         });
         this.attach();
@@ -74,6 +93,7 @@ class KanbanBoard {
     }
     renderTasks() {
         const listEl = document.querySelector(`#${this.state}`);
+        listEl.innerHTML = "";
         for (const kanItem of this.assignedTasks) {
             const listItem = document.createElement('li');
             listItem.textContent = kanItem.task;
