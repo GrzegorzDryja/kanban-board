@@ -31,6 +31,38 @@ function autobind(_: any, _2: string, descriptor: PropertyDescriptor) {
   return adjDescriptor;
 }
 
+class KanbanBoard{
+  templateElement: HTMLTemplateElement;
+  targetElement: HTMLDivElement;
+  element: HTMLElement;
+
+  constructor(private type: "to-do" | "in-progress" | "done"){
+    this.templateElement = <HTMLTemplateElement>(
+      document.querySelector("#kanban-board")
+    );
+    this.targetElement = <HTMLDivElement>document.querySelector("#target");
+
+    const importedNode = document.importNode(
+      this.templateElement.content,
+      true
+    );
+    this.element = <HTMLFormElement>importedNode.firstElementChild;
+    this.element.id = `${this.type}-kanban`;
+    this.attach();
+    this.renderContent();    
+  }
+
+  private renderContent(){
+    const listId = `${this.type}-kanban-list`;
+    this.element.querySelector("ul")!.id = listId;
+    this.element.querySelector("h2")!.textContent = this.type.toUpperCase() +" TASKS";
+  }
+
+  private attach() {
+    this.targetElement.insertAdjacentElement("beforeend", this.element);
+  }
+}
+
 class InputForm {
   templateElement: HTMLTemplateElement;
   targetElement: HTMLDivElement;
@@ -98,3 +130,6 @@ class InputForm {
 }
 
 const task = new InputForm();
+const todoList = new KanbanBoard("to-do");
+const inprogressList = new KanbanBoard("in-progress");
+const doneList = new KanbanBoard("done");

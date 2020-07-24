@@ -29,6 +29,26 @@ function autobind(_, _2, descriptor) {
     };
     return adjDescriptor;
 }
+class KanbanBoard {
+    constructor(type) {
+        this.type = type;
+        this.templateElement = (document.querySelector("#kanban-board"));
+        this.targetElement = document.querySelector("#target");
+        const importedNode = document.importNode(this.templateElement.content, true);
+        this.element = importedNode.firstElementChild;
+        this.element.id = `${this.type}-kanban`;
+        this.attach();
+        this.renderContent();
+    }
+    renderContent() {
+        const listId = `${this.type}-kanban-list`;
+        this.element.querySelector("ul").id = listId;
+        this.element.querySelector("h2").textContent = this.type.toUpperCase() + " TASKS";
+    }
+    attach() {
+        this.targetElement.insertAdjacentElement("beforeend", this.element);
+    }
+}
 class InputForm {
     constructor() {
         this.templateElement = (document.querySelector("#input-form"));
@@ -78,4 +98,7 @@ __decorate([
     autobind
 ], InputForm.prototype, "submitHandler", null);
 const task = new InputForm();
+const todoList = new KanbanBoard("to-do");
+const inprogressList = new KanbanBoard("in-progress");
+const doneList = new KanbanBoard("done");
 //# sourceMappingURL=app.js.map
