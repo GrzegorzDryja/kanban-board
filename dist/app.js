@@ -36,12 +36,12 @@ class KanbanBoard {
         this.targetElement = document.querySelector("#target");
         const importedNode = document.importNode(this.templateElement.content, true);
         this.element = importedNode.firstElementChild;
-        this.element.id = `${this.type}-kanban`;
+        this.element.id = `${this.type}-task`;
         this.attach();
         this.renderContent();
     }
     renderContent() {
-        const listId = `${this.type}-kanban-list`;
+        const listId = `${this.type}`;
         this.element.querySelector("ul").id = listId;
         this.element.querySelector("h2").textContent = this.type.toUpperCase() + " TASKS";
     }

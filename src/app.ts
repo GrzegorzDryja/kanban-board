@@ -47,13 +47,13 @@ class KanbanBoard{
       true
     );
     this.element = <HTMLFormElement>importedNode.firstElementChild;
-    this.element.id = `${this.type}-kanban`;
+    this.element.id = `${this.type}-task`;
     this.attach();
     this.renderContent();    
   }
 
   private renderContent(){
-    const listId = `${this.type}-kanban-list`;
+    const listId = `${this.type}`;
     this.element.querySelector("ul")!.id = listId;
     this.element.querySelector("h2")!.textContent = this.type.toUpperCase() +" TASKS";
   }
