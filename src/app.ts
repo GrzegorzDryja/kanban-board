@@ -1,3 +1,24 @@
+interface Validatable {
+  value: string;
+  required: boolean;
+  minLength: number;
+  maxLength: number;
+}
+
+function validate(validatableInput: Validatable){
+  let isValid = true;
+  if(validatableInput.required){
+    isValid = isValid && validatableInput.value.toString().trim().length !== 0;
+  }
+  if (validatableInput.minLength != null && typeof validatableInput.value === "string"){
+    isValid = isValid && validatableInput.value.length >= validatableInput.minLength;
+  }
+  if (validatableInput.maxLength != null && typeof validatableInput.value === "string"){
+    isValid = isValid && validatableInput.value.length <= validatableInput.maxLength;
+  }
+  return isValid;
+}
+
 function autobind(_: any, _2: string, descriptor: PropertyDescriptor) {
   const originalMethod = descriptor.value;
   const adjDescriptor: PropertyDescriptor = {
@@ -38,7 +59,14 @@ class InputForm {
   private gatherUserInput(): string | void {
     const enteredTask = this.taskInput.value;
 
-    if (enteredTask.trim().length === 0) {
+    const taskValidatable: Validatable = {
+      value: enteredTask,
+      required: true,
+      minLength: 1,
+      maxLength: 256
+    }
+
+    if (!validate(taskValidatable)) {
       alert("Invalid input, try again.");
       return;
     } else {
