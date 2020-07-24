@@ -5,6 +5,33 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+class KanbanState {
+    constructor() {
+        this.listeners = [];
+        this.tasks = [];
+    }
+    static getInstance() {
+        if (this.instance) {
+            return this.instance;
+        }
+        this.instance = new KanbanState();
+        return this.instance;
+    }
+    addListener(listenerFn) {
+        this.listeners.push(listenerFn);
+    }
+    addTask(task) {
+        const newTask = {
+            id: Math.random().toString(),
+            task: task
+        };
+        this.tasks.push(newTask);
+        for (const listenerFn of this.listeners) {
+            listenerFn(this.tasks.slice());
+        }
+    }
+}
+const kanbanState = KanbanState.getInstance();
 function validate(validatableInput) {
     let isValid = true;
     if (validatableInput.required) {
@@ -34,11 +61,24 @@ class KanbanBoard {
         this.type = type;
         this.templateElement = (document.querySelector("#kanban-board"));
         this.targetElement = document.querySelector("#flex-container");
+        this.assignedTasks = [];
         const importedNode = document.importNode(this.templateElement.content, true);
         this.element = importedNode.firstElementChild;
         this.element.id = `${this.type}-task`;
+        kanbanState.addListener((tasks) => {
+            this.assignedTasks = tasks;
+            this.renderTasks();
+        });
         this.attach();
         this.renderContent();
+    }
+    renderTasks() {
+        const listEl = document.querySelector(`#${this.type}`);
+        for (const kanItem of this.assignedTasks) {
+            const listItem = document.createElement('li');
+            listItem.textContent = kanItem.task;
+            listEl.appendChild(listItem);
+        }
     }
     renderContent() {
         const listId = `${this.type}`;
@@ -83,7 +123,7 @@ class InputForm {
         event.preventDefault();
         const userInput = this.gatherUserInput();
         if (userInput) {
-            console.log(userInput);
+            kanbanState.addTask(userInput);
             this.clearInputs();
         }
     }

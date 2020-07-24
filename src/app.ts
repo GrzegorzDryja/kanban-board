@@ -1,3 +1,38 @@
+class KanbanState {
+  private listeners: any[] = [];
+  private tasks: any[] = [];
+  private static instance: KanbanState;
+
+  private constructor(){
+
+  }
+
+  static getInstance() {
+    if (this.instance){
+      return this.instance;
+    }
+    this.instance = new KanbanState();
+    return this.instance;
+  }
+
+  addListener(listenerFn: Function){
+    this.listeners.push(listenerFn);
+  }
+
+  addTask(task: string){
+    const newTask = {
+      id: Math.random().toString(),
+      task: task
+    };
+    this.tasks.push(newTask);
+    for(const listenerFn of this.listeners){
+      listenerFn(this.tasks.slice())
+    }
+  }
+}
+
+const kanbanState = KanbanState.getInstance();
+
 interface Validatable {
   value: string;
   required: boolean;
@@ -35,12 +70,14 @@ class KanbanBoard{
   templateElement: HTMLTemplateElement;
   targetElement: HTMLDivElement;
   element: HTMLElement;
+  assignedTasks: any[];
 
   constructor(private type: "to-do" | "in-progress" | "done"){
     this.templateElement = <HTMLTemplateElement>(
       document.querySelector("#kanban-board")
     );
     this.targetElement = <HTMLDivElement>document.querySelector("#flex-container");
+    this.assignedTasks = [];
 
     const importedNode = document.importNode(
       this.templateElement.content,
@@ -48,8 +85,23 @@ class KanbanBoard{
     );
     this.element = <HTMLFormElement>importedNode.firstElementChild;
     this.element.id = `${this.type}-task`;
+
+      kanbanState.addListener((tasks: any[]) => {
+        this.assignedTasks = tasks;
+        this.renderTasks();
+      })
+
     this.attach();
     this.renderContent();    
+  }
+
+  private renderTasks(){
+    const listEl = <HTMLUListElement>document.querySelector(`#${this.type}`);
+    for(const kanItem of this.assignedTasks) {
+      const listItem = document.createElement('li');
+      listItem.textContent = kanItem.task;
+      listEl.appendChild(listItem);
+    }
   }
 
   private renderContent(){
@@ -115,7 +167,7 @@ class InputForm {
     event.preventDefault();
     const userInput = this.gatherUserInput();
     if(userInput){
-      console.log(userInput);
+      kanbanState.addTask(userInput);
       this.clearInputs();
     }
   }
