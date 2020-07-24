@@ -40,7 +40,7 @@ class KanbanBoard{
     this.templateElement = <HTMLTemplateElement>(
       document.querySelector("#kanban-board")
     );
-    this.targetElement = <HTMLDivElement>document.querySelector("#target");
+    this.targetElement = <HTMLDivElement>document.querySelector("#flex-container");
 
     const importedNode = document.importNode(
       this.templateElement.content,

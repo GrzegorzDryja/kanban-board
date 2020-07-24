@@ -33,7 +33,7 @@ class KanbanBoard {
     constructor(type) {
         this.type = type;
         this.templateElement = (document.querySelector("#kanban-board"));
-        this.targetElement = document.querySelector("#target");
+        this.targetElement = document.querySelector("#flex-container");
         const importedNode = document.importNode(this.templateElement.content, true);
         this.element = importedNode.firstElementChild;
         this.element.id = `${this.type}-task`;
