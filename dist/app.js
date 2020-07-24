@@ -12,13 +12,13 @@ function autobind(_, _2, descriptor) {
         get() {
             const boundFn = originalMethod.bind(this);
             return boundFn;
-        }
+        },
     };
     return adjDescriptor;
 }
 class InputForm {
     constructor() {
-        this.templateElement = document.querySelector("#input-form");
+        this.templateElement = (document.querySelector("#input-form"));
         this.targetElement = document.querySelector("#target");
         const importedNode = document.importNode(this.templateElement.content, true);
         this.element = importedNode.firstElementChild;
@@ -27,9 +27,26 @@ class InputForm {
         this.configure();
         this.attach();
     }
+    gatherUserInput() {
+        const enteredTask = this.taskInput.value;
+        if (enteredTask.trim().length === 0) {
+            alert("Invalid input, try again.");
+            return;
+        }
+        else {
+            return enteredTask;
+        }
+    }
+    clearInputs() {
+        this.taskInput.value = "";
+    }
     submitHandler(event) {
         event.preventDefault();
-        console.log(this.taskInput.value);
+        const userInput = this.gatherUserInput();
+        if (userInput) {
+            console.log(userInput);
+            this.clearInputs();
+        }
     }
     configure() {
         this.element.addEventListener("submit", this.submitHandler.bind(this));
