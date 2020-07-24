@@ -72,7 +72,7 @@ class KanbanBoard{
   element: HTMLElement;
   assignedTasks: any[];
 
-  constructor(private type: "to-do" | "in-progress" | "done"){
+  constructor(private state: "to-do" | "in-progress" | "done"){
     this.templateElement = <HTMLTemplateElement>(
       document.querySelector("#kanban-board")
     );
@@ -84,7 +84,7 @@ class KanbanBoard{
       true
     );
     this.element = <HTMLFormElement>importedNode.firstElementChild;
-    this.element.id = `${this.type}-task`;
+    this.element.id = `${this.state}-task`;
 
       kanbanState.addListener((tasks: any[]) => {
         this.assignedTasks = tasks;
@@ -96,7 +96,7 @@ class KanbanBoard{
   }
 
   private renderTasks(){
-    const listEl = <HTMLUListElement>document.querySelector(`#${this.type}`);
+    const listEl = <HTMLUListElement>document.querySelector(`#${this.state}`);
     for(const kanItem of this.assignedTasks) {
       const listItem = document.createElement('li');
       listItem.textContent = kanItem.task;
@@ -105,9 +105,9 @@ class KanbanBoard{
   }
 
   private renderContent(){
-    const listId = `${this.type}`;
+    const listId = `${this.state}`;
     this.element.querySelector("ul")!.id = listId;
-    this.element.querySelector("h2")!.textContent = this.type.toUpperCase() +" TASKS";
+    this.element.querySelector("h2")!.textContent = this.state.toUpperCase() +" TASKS";
   }
 
   private attach() {
@@ -173,7 +173,7 @@ class InputForm {
   }
 
   private configure() {
-    this.element.addEventListener("submit", this.submitHandler.bind(this));
+    this.element.addEventListener("submit", this.submitHandler);
   }
 
   private attach() {

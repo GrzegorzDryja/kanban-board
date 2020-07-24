@@ -57,14 +57,14 @@ function autobind(_, _2, descriptor) {
     return adjDescriptor;
 }
 class KanbanBoard {
-    constructor(type) {
-        this.type = type;
+    constructor(state) {
+        this.state = state;
         this.templateElement = (document.querySelector("#kanban-board"));
         this.targetElement = document.querySelector("#flex-container");
         this.assignedTasks = [];
         const importedNode = document.importNode(this.templateElement.content, true);
         this.element = importedNode.firstElementChild;
-        this.element.id = `${this.type}-task`;
+        this.element.id = `${this.state}-task`;
         kanbanState.addListener((tasks) => {
             this.assignedTasks = tasks;
             this.renderTasks();
@@ -73,7 +73,7 @@ class KanbanBoard {
         this.renderContent();
     }
     renderTasks() {
-        const listEl = document.querySelector(`#${this.type}`);
+        const listEl = document.querySelector(`#${this.state}`);
         for (const kanItem of this.assignedTasks) {
             const listItem = document.createElement('li');
             listItem.textContent = kanItem.task;
@@ -81,9 +81,9 @@ class KanbanBoard {
         }
     }
     renderContent() {
-        const listId = `${this.type}`;
+        const listId = `${this.state}`;
         this.element.querySelector("ul").id = listId;
-        this.element.querySelector("h2").textContent = this.type.toUpperCase() + " TASKS";
+        this.element.querySelector("h2").textContent = this.state.toUpperCase() + " TASKS";
     }
     attach() {
         this.targetElement.insertAdjacentElement("beforeend", this.element);
@@ -128,7 +128,7 @@ class InputForm {
         }
     }
     configure() {
-        this.element.addEventListener("submit", this.submitHandler.bind(this));
+        this.element.addEventListener("submit", this.submitHandler);
     }
     attach() {
         this.targetElement.insertAdjacentElement("afterbegin", this.element);
