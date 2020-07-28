@@ -1,3 +1,14 @@
+interface Draggable {
+  dragStartHandler(event: DragEvent): void;
+  dragEndHandler(event: DragEvent): void;
+};
+
+interface DragTarget {
+  dragOverHandler(event: DragEvent): void;
+  dropHandler(event: DragEvent): void;
+  dragLeaveHandler(event: DragEvent): void;
+};
+
 enum TaskStatus {
   ToDo,
   InProgress,
@@ -41,6 +52,18 @@ class KanbanState extends State<Task> {
   addTask(task: string) {
     const newTask = new Task(Math.random().toString(), task, TaskStatus.ToDo);
     this.tasks.push(newTask);
+    this.updateListeners();
+  }
+
+  moveTask(taskId: string, newStatus: TaskStatus) {
+    const task = this.tasks.find(tsk => tsk.id === taskId);
+    if(task && task.status !== newStatus){
+      task.status = newStatus;
+      this.updateListeners();
+    }
+  }
+
+  private updateListeners(){
     for (const listenerFn of this.listeners) {
       listenerFn(this.tasks.slice());
     }
@@ -51,9 +74,9 @@ const kanbanState = KanbanState.getInstance();
 
 interface Validatable {
   value: string;
-  required: boolean;
-  minLength: number;
-  maxLength: number;
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
 }
 
 function validate(validatableInput: Validatable) {
@@ -101,16 +124,16 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
     insertAtStart: boolean,
     newElemenetId?: string,
   ) {
-    this.templateElement = <HTMLTemplateElement>(
-      document.querySelector(`#${templateId}`)
-    );
-    this.targetElement = <T>document.querySelector(`#${hostElementId}`);
+    this.templateElement = <HTMLTemplateElement> document.getElementById(templateId);
+    
+    this.targetElement = <T>document.getElementById(hostElementId);
 
     const importedNode = document.importNode(
       this.templateElement.content,
       true
     );
-    this.element = <U>importedNode.firstElementChild;
+  
+    this.element = <U> importedNode.firstElementChild;
     if (newElemenetId) {
       this.element.id = newElemenetId;
     }
@@ -126,30 +149,77 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
   abstract renderContent(): void;
 }
 
-class KanbanBoard extends Component<HTMLDivElement, HTMLElement> {
+class KanbanTask extends Component<HTMLUListElement, HTMLLIElement> implements Draggable {
+  protected task: Task;
+
+  constructor(hostId: string, task: Task){
+    super("single-task", hostId, false, task.id);
+    this.task = task;
+
+    this.configure();
+    this.renderContent();
+  }
+
+  @autobind
+  dragStartHandler(event: DragEvent){
+    event.dataTransfer!.setData("text/plain", this.task.id);
+    event.dataTransfer!.effectAllowed = "move";
+  };
+  @autobind
+  dragEndHandler(event: DragEvent){
+    console.log(event)
+  };
+
+  configure(){
+    this.element.addEventListener("dragstart", this.dragStartHandler)
+    this.element.addEventListener("dragend", this.dragEndHandler)
+  };
+  renderContent(){
+    this.element.textContent = this.task.task;
+  };
+}
+
+class KanbanBoard extends Component<HTMLDivElement, HTMLElement> implements DragTarget{
   assignedTasks: Task[];
 
   constructor(private state: "to-do" | "in-progress" | "done") {
-    super("#kanban-board", "#flex-container", false, `${state}-task`);
+    super("kanban-board", "flex-container", false, `${state}-task`);
     this.assignedTasks = [];
 
     this.configure();
     this.renderContent();
   }
 
-  private renderTasks() {
-    const listEl = <HTMLUListElement>document.querySelector(`#${this.state}`);
-    listEl.innerHTML = ""; //Look up for it on implementing timer
-    for (const kanItem of this.assignedTasks) {
-      const listItem = document.createElement("li");
-      listItem.textContent = kanItem.task;
-      listEl.appendChild(listItem);
+  @autobind
+  dragOverHandler(event: DragEvent) {
+    if(event.dataTransfer && event.dataTransfer.types[0] === "text/plain"){
+      event.preventDefault();
+      const listEl = this.element.querySelector("ul");
+      listEl?.classList.add("droppable");
     }
   }
 
+  @autobind
+  dropHandler(event: DragEvent){
+    const taskId = event.dataTransfer!.getData("text/plain");
+    kanbanState.moveTask(taskId,
+      this.state === "to-do" ? TaskStatus.ToDo :
+        this.state === "in-progress" ? TaskStatus.InProgress : TaskStatus.Done)
+  }
+
+  @autobind
+  dragLeaveHandler(event: DragEvent){
+    const listEl = this.element.querySelector("ul");
+    listEl?.classList.remove("droppable");
+  }
+
   configure(){    
+    this.element.addEventListener("dragover", this.dragOverHandler);
+    this.element.addEventListener("dragleave", this.dragLeaveHandler);
+    this.element.addEventListener("drop", this.dropHandler);
+
     kanbanState.addListener((tasks: Task[]) => {
-      const crucialTasks = tasks.filter((tsk) => {
+      const crucialTasks = tasks.filter(tsk => {
         if (this.state === "to-do") {
           return tsk.status === TaskStatus.ToDo;
         }
@@ -169,13 +239,21 @@ class KanbanBoard extends Component<HTMLDivElement, HTMLElement> {
     this.element.querySelector("h2")!.textContent =
       this.state.toUpperCase() + " TASKS";
   }
+  
+  private renderTasks() {
+    const listEl = <HTMLUListElement> document.getElementById(`${this.state}`);
+    listEl.innerHTML = "";
+    for (const kanItem of this.assignedTasks) {
+      new KanbanTask(this.element.querySelector("ul")!.id, kanItem)
+    }
+  }
 }
 
 class InputForm extends Component<HTMLDivElement, HTMLElement> {
   taskInput: HTMLInputElement;
 
   constructor() {
-    super("#input-form", "#target", true, "user-input");
+    super("input-form", "target", true, "user-input");
 
     this.taskInput = <HTMLInputElement>this.element.querySelector("#task");
 

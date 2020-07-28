@@ -5,6 +5,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+;
+;
 var TaskStatus;
 (function (TaskStatus) {
     TaskStatus[TaskStatus["ToDo"] = 0] = "ToDo";
@@ -18,9 +20,17 @@ class Task {
         this.status = status;
     }
 }
-class KanbanState {
+class State {
     constructor() {
         this.listeners = [];
+    }
+    addListener(listenerFn) {
+        this.listeners.push(listenerFn);
+    }
+}
+class KanbanState extends State {
+    constructor() {
+        super();
         this.tasks = [];
     }
     static getInstance() {
@@ -30,12 +40,19 @@ class KanbanState {
         this.instance = new KanbanState();
         return this.instance;
     }
-    addListener(listenerFn) {
-        this.listeners.push(listenerFn);
-    }
     addTask(task) {
         const newTask = new Task(Math.random().toString(), task, TaskStatus.ToDo);
         this.tasks.push(newTask);
+        this.updateListeners();
+    }
+    moveTask(taskId, newStatus) {
+        const task = this.tasks.find(tsk => tsk.id === taskId);
+        if (task && task.status !== newStatus) {
+            task.status = newStatus;
+            this.updateListeners();
+        }
+    }
+    updateListeners() {
         for (const listenerFn of this.listeners) {
             listenerFn(this.tasks.slice());
         }
@@ -47,11 +64,15 @@ function validate(validatableInput) {
     if (validatableInput.required) {
         isValid = isValid && validatableInput.value.toString().trim().length !== 0;
     }
-    if (validatableInput.minLength != null && typeof validatableInput.value === "string") {
-        isValid = isValid && validatableInput.value.length >= validatableInput.minLength;
+    if (validatableInput.minLength != null &&
+        typeof validatableInput.value === "string") {
+        isValid =
+            isValid && validatableInput.value.length >= validatableInput.minLength;
     }
-    if (validatableInput.maxLength != null && typeof validatableInput.value === "string") {
-        isValid = isValid && validatableInput.value.length <= validatableInput.maxLength;
+    if (validatableInput.maxLength != null &&
+        typeof validatableInput.value === "string") {
+        isValid =
+            isValid && validatableInput.value.length <= validatableInput.maxLength;
     }
     return isValid;
 }
@@ -66,15 +87,81 @@ function autobind(_, _2, descriptor) {
     };
     return adjDescriptor;
 }
-class KanbanBoard {
-    constructor(state) {
-        this.state = state;
-        this.templateElement = (document.querySelector("#kanban-board"));
-        this.targetElement = document.querySelector("#flex-container");
-        this.assignedTasks = [];
+class Component {
+    constructor(templateId, hostElementId, insertAtStart, newElemenetId) {
+        this.templateElement = document.getElementById(templateId);
+        this.targetElement = document.getElementById(hostElementId);
         const importedNode = document.importNode(this.templateElement.content, true);
         this.element = importedNode.firstElementChild;
-        this.element.id = `${this.state}-task`;
+        if (newElemenetId) {
+            this.element.id = newElemenetId;
+        }
+        this.attach(insertAtStart);
+    }
+    attach(insertAtStart) {
+        this.targetElement.insertAdjacentElement(insertAtStart ? "afterbegin" : "beforeend", this.element);
+    }
+}
+class KanbanTask extends Component {
+    constructor(hostId, task) {
+        super("single-task", hostId, false, task.id);
+        this.task = task;
+        this.configure();
+        this.renderContent();
+    }
+    dragStartHandler(event) {
+        event.dataTransfer.setData("text/plain", this.task.id);
+        event.dataTransfer.effectAllowed = "move";
+    }
+    ;
+    dragEndHandler(event) {
+        console.log(event);
+    }
+    ;
+    configure() {
+        this.element.addEventListener("dragstart", this.dragStartHandler);
+        this.element.addEventListener("dragend", this.dragEndHandler);
+    }
+    ;
+    renderContent() {
+        this.element.textContent = this.task.task;
+    }
+    ;
+}
+__decorate([
+    autobind
+], KanbanTask.prototype, "dragStartHandler", null);
+__decorate([
+    autobind
+], KanbanTask.prototype, "dragEndHandler", null);
+class KanbanBoard extends Component {
+    constructor(state) {
+        super("kanban-board", "flex-container", false, `${state}-task`);
+        this.state = state;
+        this.assignedTasks = [];
+        this.configure();
+        this.renderContent();
+    }
+    dragOverHandler(event) {
+        if (event.dataTransfer && event.dataTransfer.types[0] === "text/plain") {
+            event.preventDefault();
+            const listEl = this.element.querySelector("ul");
+            listEl === null || listEl === void 0 ? void 0 : listEl.classList.add("droppable");
+        }
+    }
+    dropHandler(event) {
+        const taskId = event.dataTransfer.getData("text/plain");
+        kanbanState.moveTask(taskId, this.state === "to-do" ? TaskStatus.ToDo :
+            this.state === "in-progress" ? TaskStatus.InProgress : TaskStatus.Done);
+    }
+    dragLeaveHandler(event) {
+        const listEl = this.element.querySelector("ul");
+        listEl === null || listEl === void 0 ? void 0 : listEl.classList.remove("droppable");
+    }
+    configure() {
+        this.element.addEventListener("dragover", this.dragOverHandler);
+        this.element.addEventListener("dragleave", this.dragLeaveHandler);
+        this.element.addEventListener("drop", this.dropHandler);
         kanbanState.addListener((tasks) => {
             const crucialTasks = tasks.filter(tsk => {
                 if (this.state === "to-do") {
@@ -88,45 +175,45 @@ class KanbanBoard {
             this.assignedTasks = crucialTasks;
             this.renderTasks();
         });
-        this.attach();
-        this.renderContent();
-    }
-    renderTasks() {
-        const listEl = document.querySelector(`#${this.state}`);
-        listEl.innerHTML = "";
-        for (const kanItem of this.assignedTasks) {
-            const listItem = document.createElement('li');
-            listItem.textContent = kanItem.task;
-            listEl.appendChild(listItem);
-        }
     }
     renderContent() {
         const listId = `${this.state}`;
         this.element.querySelector("ul").id = listId;
-        this.element.querySelector("h2").textContent = this.state.toUpperCase() + " TASKS";
+        this.element.querySelector("h2").textContent =
+            this.state.toUpperCase() + " TASKS";
     }
-    attach() {
-        this.targetElement.insertAdjacentElement("beforeend", this.element);
+    renderTasks() {
+        const listEl = document.getElementById(`${this.state}`);
+        listEl.innerHTML = "";
+        for (const kanItem of this.assignedTasks) {
+            new KanbanTask(this.element.querySelector("ul").id, kanItem);
+        }
     }
 }
-class InputForm {
+__decorate([
+    autobind
+], KanbanBoard.prototype, "dragOverHandler", null);
+__decorate([
+    autobind
+], KanbanBoard.prototype, "dropHandler", null);
+__decorate([
+    autobind
+], KanbanBoard.prototype, "dragLeaveHandler", null);
+class InputForm extends Component {
     constructor() {
-        this.templateElement = (document.querySelector("#input-form"));
-        this.targetElement = document.querySelector("#target");
-        const importedNode = document.importNode(this.templateElement.content, true);
-        this.element = importedNode.firstElementChild;
-        this.element.id = "user-input";
+        super("input-form", "target", true, "user-input");
         this.taskInput = this.element.querySelector("#task");
         this.configure();
-        this.attach();
     }
+    renderContent() { }
+    ;
     gatherUserInput() {
         const enteredTask = this.taskInput.value;
         const taskValidatable = {
             value: enteredTask,
             required: true,
             minLength: 1,
-            maxLength: 256
+            maxLength: 256,
         };
         if (!validate(taskValidatable)) {
             alert("Invalid input, try again.");
@@ -149,9 +236,6 @@ class InputForm {
     }
     configure() {
         this.element.addEventListener("submit", this.submitHandler);
-    }
-    attach() {
-        this.targetElement.insertAdjacentElement("afterbegin", this.element);
     }
 }
 __decorate([

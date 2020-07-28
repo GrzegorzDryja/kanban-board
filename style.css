@@ -133,11 +133,11 @@ button:active {
   background: #ffe3ee;
 }
 
-#in-progress .droppable {
+#in-progress.droppable {
   background: #f0ffab;
 }
 
-#done .droppable {
+#done.droppable {
   background: #abffab;
 }
 
