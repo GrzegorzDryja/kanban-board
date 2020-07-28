@@ -74,11 +74,11 @@ button:active {
 }
 
 #in-progress-task {
-  border-color: yellow;
+  border-color: rgb(255, 208, 0);
 }
 
 #in-progress-task header {
-  background: yellow;
+  background: rgb(255, 208, 0);
 }
 
 #done-task {
@@ -129,7 +129,7 @@ button:active {
   margin: 0;
 }
 
-.droppable {
+#to-do.droppable {
   background: #ffe3ee;
 }
 
