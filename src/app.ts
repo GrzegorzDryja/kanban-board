@@ -38,8 +38,6 @@ class KanbanState extends State<Task> {
     return this.instance;
   }
 
-
-
   addTask(task: string) {
     const newTask = new Task(Math.random().toString(), task, TaskStatus.ToDo);
     this.tasks.push(newTask);
