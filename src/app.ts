@@ -1,13 +1,15 @@
 enum TaskStatus {
   ToDo,
   InProgress,
-  Done
+  Done,
 }
 
 class Task {
-  constructor(public id: string, public task: string, public status: TaskStatus){
-
-  }
+  constructor(
+    public id: string,
+    public task: string,
+    public status: TaskStatus
+  ) {}
 }
 
 type Listener = (items: Task[]) => void;
@@ -17,27 +19,25 @@ class KanbanState {
   private tasks: Task[] = [];
   private static instance: KanbanState;
 
-  private constructor(){
-
-  }
+  private constructor() {}
 
   static getInstance() {
-    if (this.instance){
+    if (this.instance) {
       return this.instance;
     }
     this.instance = new KanbanState();
     return this.instance;
   }
 
-  addListener(listenerFn: Listener){
+  addListener(listenerFn: Listener) {
     this.listeners.push(listenerFn);
   }
 
-  addTask(task: string){
+  addTask(task: string) {
     const newTask = new Task(Math.random().toString(), task, TaskStatus.ToDo);
     this.tasks.push(newTask);
-    for(const listenerFn of this.listeners){
-      listenerFn(this.tasks.slice())
+    for (const listenerFn of this.listeners) {
+      listenerFn(this.tasks.slice());
     }
   }
 }
@@ -51,16 +51,24 @@ interface Validatable {
   maxLength: number;
 }
 
-function validate(validatableInput: Validatable){
+function validate(validatableInput: Validatable) {
   let isValid = true;
-  if(validatableInput.required){
+  if (validatableInput.required) {
     isValid = isValid && validatableInput.value.toString().trim().length !== 0;
   }
-  if (validatableInput.minLength != null && typeof validatableInput.value === "string"){
-    isValid = isValid && validatableInput.value.length >= validatableInput.minLength;
+  if (
+    validatableInput.minLength != null &&
+    typeof validatableInput.value === "string"
+  ) {
+    isValid =
+      isValid && validatableInput.value.length >= validatableInput.minLength;
   }
-  if (validatableInput.maxLength != null && typeof validatableInput.value === "string"){
-    isValid = isValid && validatableInput.value.length <= validatableInput.maxLength;
+  if (
+    validatableInput.maxLength != null &&
+    typeof validatableInput.value === "string"
+  ) {
+    isValid =
+      isValid && validatableInput.value.length <= validatableInput.maxLength;
   }
   return isValid;
 }
@@ -77,89 +85,99 @@ function autobind(_: any, _2: string, descriptor: PropertyDescriptor) {
   return adjDescriptor;
 }
 
-class KanbanBoard{
+abstract class Component<T extends HTMLElement, U extends HTMLElement> {
   templateElement: HTMLTemplateElement;
-  targetElement: HTMLDivElement;
-  element: HTMLElement;
-  assignedTasks: Task[];
+  targetElement: T;
+  element: U;
 
-  constructor(private state: "to-do" | "in-progress" | "done"){
+  constructor(
+    templateId: string,
+    hostElementId: string,
+    insertAtStart: boolean,
+    newElemenetId?: string,
+  ) {
     this.templateElement = <HTMLTemplateElement>(
-      document.querySelector("#kanban-board")
+      document.querySelector(`#${templateId}`)
     );
-    this.targetElement = <HTMLDivElement>document.querySelector("#flex-container");
-    this.assignedTasks = [];
+    this.targetElement = <T>document.querySelector(`#${hostElementId}`);
 
     const importedNode = document.importNode(
       this.templateElement.content,
       true
     );
-    this.element = <HTMLFormElement>importedNode.firstElementChild;
-    this.element.id = `${this.state}-task`;
+    this.element = <U>importedNode.firstElementChild;
+    if (newElemenetId) {
+      this.element.id = newElemenetId;
+    }
 
+    this.attach(insertAtStart);
+  }
+
+  private attach(insertAtStart: boolean) {
+    this.targetElement.insertAdjacentElement(insertAtStart ? "afterbegin" : "beforeend", this.element);
+  }
+
+  abstract configure(): void;
+  abstract renderContent(): void;
+}
+
+class KanbanBoard extends Component<HTMLDivElement, HTMLElement> {
+  assignedTasks: Task[];
+
+  constructor(private state: "to-do" | "in-progress" | "done") {
+    super("#kanban-board", "#flex-container", false, `${state}-task`);
+    this.assignedTasks = [];
+
+    this.configure();
+    this.renderContent();
+  }
+
+  private renderTasks() {
+    const listEl = <HTMLUListElement>document.querySelector(`#${this.state}`);
+    listEl.innerHTML = ""; //Look up for it on implementing timer
+    for (const kanItem of this.assignedTasks) {
+      const listItem = document.createElement("li");
+      listItem.textContent = kanItem.task;
+      listEl.appendChild(listItem);
+    }
+  }
+
+  configure(){    
     kanbanState.addListener((tasks: Task[]) => {
-      const crucialTasks = tasks.filter(tsk => {
-        if(this.state === "to-do"){
+      const crucialTasks = tasks.filter((tsk) => {
+        if (this.state === "to-do") {
           return tsk.status === TaskStatus.ToDo;
         }
-        if(this.state === "in-progress"){
+        if (this.state === "in-progress") {
           return tsk.status === TaskStatus.InProgress;
         }
         return tsk.status === TaskStatus.Done;
       });
       this.assignedTasks = crucialTasks;
       this.renderTasks();
-    })
-
-    this.attach();
-    this.renderContent();    
+    });
   }
 
-  private renderTasks(){
-    const listEl = <HTMLUListElement>document.querySelector(`#${this.state}`);
-    listEl.innerHTML = ""; //Look up for it on implementing timer
-    for(const kanItem of this.assignedTasks) {
-      const listItem = document.createElement('li');
-      listItem.textContent = kanItem.task;
-      listEl.appendChild(listItem);
-    }
-  }
-
-  private renderContent(){
+  renderContent() {
     const listId = `${this.state}`;
     this.element.querySelector("ul")!.id = listId;
-    this.element.querySelector("h2")!.textContent = this.state.toUpperCase() +" TASKS";
-  }
-
-  private attach() {
-    this.targetElement.insertAdjacentElement("beforeend", this.element);
+    this.element.querySelector("h2")!.textContent =
+      this.state.toUpperCase() + " TASKS";
   }
 }
 
-class InputForm {
-  templateElement: HTMLTemplateElement;
-  targetElement: HTMLDivElement;
-  element: HTMLFormElement;
+class InputForm extends Component<HTMLDivElement, HTMLElement> {
   taskInput: HTMLInputElement;
 
   constructor() {
-    this.templateElement = <HTMLTemplateElement>(
-      document.querySelector("#input-form")
-    );
-    this.targetElement = <HTMLDivElement>document.querySelector("#target");
-
-    const importedNode = document.importNode(
-      this.templateElement.content,
-      true
-    );
-    this.element = <HTMLFormElement>importedNode.firstElementChild;
-    this.element.id = "user-input";
+    super("#input-form", "#target", true, "user-input");
 
     this.taskInput = <HTMLInputElement>this.element.querySelector("#task");
 
     this.configure();
-    this.attach();
   }
+
+  renderContent(){};
 
   private gatherUserInput(): string | void {
     const enteredTask = this.taskInput.value;
@@ -168,8 +186,8 @@ class InputForm {
       value: enteredTask,
       required: true,
       minLength: 1,
-      maxLength: 256
-    }
+      maxLength: 256,
+    };
 
     if (!validate(taskValidatable)) {
       alert("Invalid input, try again.");
@@ -179,7 +197,7 @@ class InputForm {
     }
   }
 
-  private clearInputs(){
+  private clearInputs() {
     this.taskInput.value = "";
   }
 
@@ -187,18 +205,14 @@ class InputForm {
   private submitHandler(event: Event) {
     event.preventDefault();
     const userInput = this.gatherUserInput();
-    if(userInput){
+    if (userInput) {
       kanbanState.addTask(userInput);
       this.clearInputs();
     }
   }
 
-  private configure() {
+  configure() {
     this.element.addEventListener("submit", this.submitHandler);
-  }
-
-  private attach() {
-    this.targetElement.insertAdjacentElement("afterbegin", this.element);
   }
 }
 
