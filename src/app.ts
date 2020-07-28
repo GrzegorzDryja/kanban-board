@@ -12,14 +12,23 @@ class Task {
   ) {}
 }
 
-type Listener = (items: Task[]) => void;
+type Listener<T> = (items: T[]) => void;
 
-class KanbanState {
-  private listeners: Listener[] = [];
+class State<T> {
+  protected listeners: Listener<T>[] = [];
+
+  addListener(listenerFn: Listener<T>) {
+    this.listeners.push(listenerFn);
+  }
+}
+
+class KanbanState extends State<Task> {
   private tasks: Task[] = [];
   private static instance: KanbanState;
 
-  private constructor() {}
+  private constructor() {
+    super();
+  }
 
   static getInstance() {
     if (this.instance) {
@@ -29,9 +38,7 @@ class KanbanState {
     return this.instance;
   }
 
-  addListener(listenerFn: Listener) {
-    this.listeners.push(listenerFn);
-  }
+
 
   addTask(task: string) {
     const newTask = new Task(Math.random().toString(), task, TaskStatus.ToDo);
