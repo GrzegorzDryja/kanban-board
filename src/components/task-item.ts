@@ -19,16 +19,34 @@ export class KanbanTask extends Component<HTMLUListElement, HTMLLIElement> imple
     event.dataTransfer!.setData("text/plain", this.task.id);
     event.dataTransfer!.effectAllowed = "move";
   };
+
   @autobind
   dragEndHandler(event: DragEvent){
-    console.log(event)
+
+    if(this.task.status === 1){
+      this.count();
+    } else {
+      this.stop();
+    }
   };
 
   configure(){
     this.element.addEventListener("dragstart", this.dragStartHandler)
     this.element.addEventListener("dragend", this.dragEndHandler)
   };
+
   renderContent(){
     this.element.textContent = this.task.task;
   };
+
+  private count(){
+    this.task.timeInterval = window.setInterval(() => {
+      this.task.time++
+    }, 1000);    
+  }
+
+  private stop() {
+    clearInterval(this.task.timeInterval);
+    console.log(`Task ${this.task.task} took ${this.task.time}s`);
+  }
 }

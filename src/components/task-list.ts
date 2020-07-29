@@ -27,6 +27,7 @@ export class KanbanBoard extends Component<HTMLDivElement, HTMLElement> implemen
 
   @autobind
   dropHandler(event: DragEvent){
+    event.preventDefault(); //Firefox
     const taskId = event.dataTransfer!.getData("text/plain");
     kanbanState.moveTask(taskId,
       this.state === "to-do" ? TaskStatus.ToDo :
