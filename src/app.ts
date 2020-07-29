@@ -1,5 +1,5 @@
-import { InputForm } from "./components/task-input";
-import { KanbanBoard } from "./components/task-list"
+import { InputForm } from "./components/task-input.ts";
+import { KanbanBoard } from "./components/task-list.ts"
 
 new InputForm();
 new KanbanBoard("to-do");

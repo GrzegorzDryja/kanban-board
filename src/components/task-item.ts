@@ -1,7 +1,7 @@
-import { Draggable } from "../models/drag-drop";
-import { Task } from "../models/task";
-import Component from "./base-component";
-import { autobind } from "../decorators/autobind";
+import { Draggable } from "../models/drag-drop.ts";
+import { Task } from "../models/task.ts";
+import Component from "./base-component.ts";
+import { autobind } from "../decorators/autobind.ts";
 
 export class KanbanTask extends Component<HTMLUListElement, HTMLLIElement> implements Draggable {
   protected task: Task;

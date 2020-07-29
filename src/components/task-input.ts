@@ -1,7 +1,7 @@
-import Component from "./base-component";
-import * as Validation from "../util/validation";
-import { autobind as Autobind } from "../decorators/autobind";
-import { kanbanState } from "../state/kanban-state";
+import Component from "./base-component.ts";
+import * as Validation from "../util/validation.ts";
+import { autobind as Autobind } from "../decorators/autobind.ts";
+import { kanbanState } from "../state/kanban-state.ts";
 
  
 export class InputForm extends Component<HTMLDivElement, HTMLElement> {

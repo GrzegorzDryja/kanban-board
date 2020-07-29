@@ -1,9 +1,9 @@
-import { DragTarget } from "../models/drag-drop";
-import { Task, TaskStatus } from "../models/task";
-import Component from "./base-component";
-import { autobind } from "../decorators/autobind";
-import { kanbanState } from "../state/kanban-state";
-import { KanbanTask } from "./task-item"
+import { DragTarget } from "../models/drag-drop.ts";
+import { Task, TaskStatus } from "../models/task.ts";
+import Component from "./base-component.ts";
+import { autobind } from "../decorators/autobind.ts";
+import { kanbanState } from "../state/kanban-state.ts";
+import { KanbanTask } from "./task-item.ts"
 
 export class KanbanBoard extends Component<HTMLDivElement, HTMLElement> implements DragTarget{
   assignedTasks: Task[];

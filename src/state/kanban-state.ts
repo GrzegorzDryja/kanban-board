@@ -1,4 +1,4 @@
-import { Task, TaskStatus} from "../models/task";
+import { Task, TaskStatus} from "../models/task.ts";
 
 type Listener<T> = (items: T[]) => void;
 
