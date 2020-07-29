@@ -5,7 +5,7 @@
   "main": "src/app.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm run build && node dist/app.js",
+    "start": "webpack-dev-server",
     "build": "webpack"
   },
   "repository": {
@@ -19,9 +19,12 @@
   },
   "homepage": "https://github.com/GrzegorzDryja/kanban-board#readme",
   "devDependencies": {
-    "lite-server": "^2.5.4",
     "html-webpack-plugin": "^4.3.0",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.3.12"
+    "lite-server": "^2.5.4",
+    "ts-loader": "^8.0.1",
+    "typescript": "^3.9.7",
+    "webpack": "^4.44.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
   }
 }
