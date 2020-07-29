@@ -27,7 +27,7 @@ export class KanbanState extends State<Task> {
   }
 
   addTask(task: string) {
-    const newTask = new Task(Math.random().toString(), task, TaskStatus.ToDo);
+    const newTask = new Task(Math.random().toString(), task, TaskStatus.ToDo, 0, 0);
     this.tasks.push(newTask);
     this.updateListeners();
   }
