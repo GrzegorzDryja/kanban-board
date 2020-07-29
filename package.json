@@ -1,0 +1,27 @@
+{
+  "name": "kanban-board",
+  "version": "0.1.0",
+  "description": "Kanban board",
+  "main": "src/app.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm run build && node dist/app.js",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GrzegorzDryja/kanban-board.git"
+  },
+  "author": "Grzegorz Dryja",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GrzegorzDryja/kanban-board/issues"
+  },
+  "homepage": "https://github.com/GrzegorzDryja/kanban-board#readme",
+  "devDependencies": {
+    "lite-server": "^2.5.4",
+    "html-webpack-plugin": "^4.3.0",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.3.12"
+  }
+}
