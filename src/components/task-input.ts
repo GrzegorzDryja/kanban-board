@@ -16,10 +16,13 @@ export class InputForm extends Component<HTMLDivElement, HTMLElement> {
   }
 
   renderContent(){};
+  configure() {
+    this.element.addEventListener("submit", this.submitHandler);
+  }
 
   private gatherUserInput(): string | void {
     const enteredTask = this.taskInput.value;
-
+    
     const taskValidatable: Validation.Validatable = {
       value: enteredTask,
       required: true,
@@ -47,9 +50,5 @@ export class InputForm extends Component<HTMLDivElement, HTMLElement> {
       kanbanState.addTask(userInput);
       this.clearInputs();
     }
-  }
-
-  configure() {
-    this.element.addEventListener("submit", this.submitHandler);
   }
 }
