@@ -2,6 +2,7 @@ import { Draggable } from "../models/drag-drop";
 import { Task } from "../models/task";
 import Component from "./base-component";
 import { autobind } from "../decorators/autobind";
+import { StatsItem } from "../components/stats-item";
 
 export class KanbanTask extends Component<HTMLUListElement, HTMLLIElement> implements Draggable {
   protected task: Task;
@@ -22,7 +23,6 @@ export class KanbanTask extends Component<HTMLUListElement, HTMLLIElement> imple
 
   @autobind
   dragEndHandler(event: DragEvent){
-
     if(this.task.status === 1){
       this.count();
     } else {
@@ -47,6 +47,6 @@ export class KanbanTask extends Component<HTMLUListElement, HTMLLIElement> imple
 
   private stop() {
     clearInterval(this.task.timeInterval);
-    console.log(`Task ${this.task.task} took ${this.task.time}s`);
+    new StatsItem(this.task.task, this.task.time);
   }
 }

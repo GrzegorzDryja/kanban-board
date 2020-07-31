@@ -13,8 +13,9 @@
       <div class="form-control">
         <label for="title">Task:</label>
         <input type="text" id="task" />
-      </div>
-      <button type="submit">ADD</button>
+        <button type="submit">ADD</button> 
+        <h5 id="counter">0/256</h5>
+      </div>           
     </form>
   </template>
   <template id="single-task">
@@ -27,6 +28,15 @@
       </header>
       <ul></ul>
     </section>
+  </template>
+  <template id="stats">
+    <section class="stats">
+      <label for="title">Stats:</label>
+      <ul></ul>
+    </section>
+  </template>
+  <template id="stats-item">
+    <li></li>
   </template>
   <div id="target">
     <div id="flex-container"></div>
