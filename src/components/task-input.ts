@@ -6,18 +6,23 @@ import { kanbanState } from "../state/kanban-state";
  
 export class InputForm extends Component<HTMLDivElement, HTMLElement> {
   taskInput: HTMLInputElement;
+  counter: HTMLInputElement;
 
   constructor() {
     super("input-form", "target", true, "user-input");
-
-    this.taskInput = <HTMLInputElement>this.element.querySelector("#task");
-
+    this.taskInput = <HTMLInputElement> this.element.querySelector("#task");
+    this.counter = <HTMLInputElement> this.element.querySelector("#counter");
     this.configure();
+    this.renderContent();
   }
+  
+  renderContent(){    
+    // const counter = <HTMLElement> this.element.querySelector("#counter")!;
+    this.taskInput.addEventListener("keyup", (e) => { this.counter.innerText = `${this.taskInput.value.length}/256`});
+  };
 
-  renderContent(){};
   configure() {
-    this.element.addEventListener("submit", this.submitHandler);
+    this.element.addEventListener("submit", this.submitHandler);  
   }
 
   private gatherUserInput(): string | void {
@@ -40,6 +45,7 @@ export class InputForm extends Component<HTMLDivElement, HTMLElement> {
 
   private clearInputs() {
     this.taskInput.value = "";
+    this.counter.innerText = "0/256";
   }
 
   @Autobind

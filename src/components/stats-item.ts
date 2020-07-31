@@ -12,7 +12,18 @@ export class StatsItem extends Component<HTMLUListElement, HTMLLIElement> {
     this.renderContent();
   }
   configure(){}
+
   renderContent(){
-    this.element.textContent =  `Task "${this.task}" took ${this.time}s.`
+    const hours = Math.floor(this.time / 360);
+    const min = Math.floor(this.time / 60);
+    const sec = this.time % 60;
+    const h = this.addZero(hours);
+    const m = this.addZero(min);
+    const s = this.addZero(sec);
+    this.element.textContent =  `Task "${this.task}" was in-progress state for ${h}:${m}:${s}`
+  }
+
+  private addZero (x: number){
+    return x < 10? `0${x}` : x;
   }
 }

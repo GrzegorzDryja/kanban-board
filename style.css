@@ -55,6 +55,12 @@ button:active {
   border-color: #a80041;
 }
 
+#counter {
+  float: right;
+  color: #ff0062;
+  font-weight: lighter;
+}
+
 #flex-container {
   display: flex;
   flex-direction: row;
@@ -141,9 +147,13 @@ button:active {
   background: #abffab;
 }
 
-#user-input {
+#user-input, .stats {
   margin: 1rem;
   padding: 1rem;
   border: 1px solid #ff0062;
   background: #f7f7f7;
+}
+
+.stats {
+  border: 1px solid violet;
 }
