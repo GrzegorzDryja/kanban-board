@@ -14,7 +14,7 @@ export class StatsItem extends Component<HTMLUListElement, HTMLLIElement> {
   configure(){}
 
   renderContent(){
-    const hours = Math.floor(this.time / 360);
+    const hours = Math.floor(this.time / 3600);
     const min = Math.floor(this.time / 60);
     const sec = this.time % 60;
     const h = this.addZero(hours);
